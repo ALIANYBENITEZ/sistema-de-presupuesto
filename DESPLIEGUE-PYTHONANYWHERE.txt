@@ -1,0 +1,135 @@
+================================================================================
+   GUÍA DE DESPLIEGUE EN PYTHONANYWHERE (gratis)
+   Vielma Moto-Repuestos - Sistema de Presupuestos
+================================================================================
+
+Esta guía publica el sistema en internet con HTTPS real (válido), para que
+funcione el "Compartir por WhatsApp" desde los celulares sin advertencias.
+
+El despliegue tiene 2 grandes partes:
+   PARTE A: subir el código a GitHub (con GitHub Desktop)
+   PARTE B: publicarlo en PythonAnywhere
+
+--------------------------------------------------------------------------------
+PARTE A - SUBIR EL CÓDIGO A GITHUB (con GitHub Desktop)
+--------------------------------------------------------------------------------
+
+1. Abrí GitHub Desktop.
+
+2. Menú:  File  ->  Add local repository...
+   - En "Local path" elegí la carpeta:
+         C:\Users\RYZEN\Desktop\sistema de presupuesto\vielma-moto-repuestos
+   - Si dice que no es un repositorio git, hacé clic en el enlace
+     "create a repository" (crear un repositorio) que aparece ahí mismo.
+
+3. Al crear el repositorio:
+   - Name: sistema_de_presupuesto  (o el que prefieras)
+   - Dejá el resto por defecto y creá.
+   - GitHub Desktop detectará automáticamente el archivo .gitignore que ya
+     está en la carpeta (para NO subir venv, certificados, contador, etc.).
+
+4. Publicá el repositorio en tu cuenta:
+   - Botón  "Publish repository"  (arriba).
+   - Cuenta: ALIANYBENITEZ
+   - Nombre del repo: sistema_de_presupuesto
+   - Podés dejarlo privado o público, funciona igual.
+   - Publish.
+
+   NOTA: el repositorio remoto queda en:
+         https://github.com/ALIANYBENITEZ/sistema_de_presupuesto
+
+5. Cada vez que cambies algo en el futuro:
+   - GitHub Desktop mostrará los cambios.
+   - Escribí un resumen abajo a la izquierda -> "Commit to main"
+   - Luego "Push origin" (arriba) para subirlos.
+
+--------------------------------------------------------------------------------
+PARTE B - PUBLICAR EN PYTHONANYWHERE
+--------------------------------------------------------------------------------
+
+PASO 1: CREAR CUENTA
+   - Entrá a https://www.pythonanywhere.com/ y creá una cuenta gratis
+     ("Create a Beginner account"). No pide tarjeta.
+   - Tu usuario será parte de la URL final:
+         https://TU_USUARIO.pythonanywhere.com
+
+PASO 2: TRAER EL CÓDIGO DESDE GITHUB
+   - En el panel de PythonAnywhere, abrí una consola:
+         menú "Consoles" -> "Bash"
+   - Clonar el repositorio (reemplazá si tu repo es privado, ver nota abajo):
+
+         git clone https://github.com/ALIANYBENITEZ/sistema_de_presupuesto.git
+
+   - Eso crea la carpeta:
+         /home/TU_USUARIO/sistema_de_presupuesto/vielma-moto-repuestos
+
+   NOTA repo privado: si lo hiciste privado, git te pedirá usuario y un
+   "personal access token" (no la contraseña). Es más simple hacerlo PUBLICO
+   solo para clonar, o generar un token en GitHub.
+
+PASO 3: INSTALAR LAS DEPENDENCIAS
+   En la misma consola Bash:
+
+         cd sistema_de_presupuesto/vielma-moto-repuestos
+         pip install --user -r requirements.txt
+
+   (Instala Flask y reportlab. La librería 'cryptography' es solo para el
+    HTTPS local; en PythonAnywhere no hace falta, pero no molesta.)
+
+PASO 4: CREAR LA WEB APP
+   - Pestaña "Web" -> "Add a new web app" -> "Next".
+   - Framework: elegí "Manual configuration" (NO el asistente de Flask).
+   - Versión de Python: la 3.10 o superior que ofrezca.
+   - Finalizar.
+
+PASO 5: CONFIGURAR EL ARCHIVO WSGI
+   - En la pestaña "Web", buscá "Code" -> enlace del archivo WSGI
+     (algo como /var/www/TU_USUARIO_pythonanywhere_com_wsgi.py).
+   - Hacé clic para editarlo. BORRÁ todo el contenido y pegá lo que está en el
+     archivo del proyecto:  wsgi_pythonanywhere.py
+
+   - Ajustá DOS cosas dentro de ese archivo:
+     a) 'TU_USUARIO' -> tu usuario real de PythonAnywhere.
+        Debe quedar la ruta a la carpeta que contiene app.py, por ej:
+            /home/miusuario/sistema_de_presupuesto/vielma-moto-repuestos
+     b) SECRET_KEY -> poné una cadena larga y aleatoria propia.
+
+   - Guardá (Save).
+
+PASO 6: RECARGAR Y PROBAR
+   - Volvé a la pestaña "Web" y hacé clic en el botón verde "Reload".
+   - Abrí:  https://TU_USUARIO.pythonanywhere.com
+   - Deberías ver el sistema de presupuestos funcionando con candado (HTTPS).
+
+--------------------------------------------------------------------------------
+ACTUALIZAR EL SISTEMA MÁS ADELANTE
+--------------------------------------------------------------------------------
+1. Hacés los cambios en tu PC.
+2. En GitHub Desktop: Commit -> Push.
+3. En la consola Bash de PythonAnywhere:
+       cd sistema_de_presupuesto/vielma-moto-repuestos
+       git pull
+4. Pestaña "Web" -> botón "Reload".
+
+--------------------------------------------------------------------------------
+NOTAS IMPORTANTES
+--------------------------------------------------------------------------------
+- HTTPS: PythonAnywhere pone el certificado válido automáticamente. Por eso el
+  "Compartir por WhatsApp" con archivo funcionará desde los celulares sin la
+  advertencia de seguridad que aparece en el modo local.
+
+- Número de WhatsApp del taller: si querés que WhatsApp abra siempre hacia un
+  número fijo, editá la constante NUMERO_WHATSAPP dentro de templates/index.html
+  (formato internacional sin + ni espacios, ej: 595981123456). Vacío = deja
+  elegir el contacto.
+
+- El contador de presupuestos (contador.txt) se guarda en el disco persistente
+  de PythonAnywhere, así que NO se pierde entre reinicios. Empieza en PRES-000001
+  la primera vez.
+
+- Uso LOCAL (sin internet) sigue disponible: en la PC del taller podés seguir
+  usando el arranque HTTPS local con:
+       python app.py
+  Ese modo es independiente del despliegue en la nube.
+
+================================================================================

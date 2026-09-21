@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vielma Moto-Repuestos | Sistema de Presupuestos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="header-texto">
+                <h1 class="header-title">VIELMA MOTO-REPUESTOS</h1>
+                <p class="header-subtitle">Sistema de Presupuestos para Autos y Motos</p>
+            </div>
+            <div class="header-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Vielma Moto-Repuestos Logo">
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% if errores %}
+        <div class="alertas">
+            <div class="alerta alerta-error">
+                <strong>Corrige los siguientes errores:</strong>
+                <ul>
+                    {% for error in errores %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if exito %}
+        <div class="alertas">
+            <div class="alerta alerta-exito">
+                {{ exito }}
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('generar_presupuesto_pdf') }}" id="form-principal">
+            <!-- Sección: Datos del Vehículo -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icono-seccion">&#9881;</span>
+                        Datos del Vehículo
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="tipo_vehiculo">Tipo de vehículo <span class="requerido">*</span></label>
+                            <select name="tipo_vehiculo" id="tipo_vehiculo">
+                                <option value="" {% if not vehiculo.tipo_vehiculo %}selected{% endif %}>-- Seleccionar --</option>
+                                <option value="Moto" {% if vehiculo.tipo_vehiculo == 'Moto' %}selected{% endif %}>Moto</option>
+                                <option value="Auto" {% if vehiculo.tipo_vehiculo == 'Auto' %}selected{% endif %}>Auto</option>
+                                <option value="Camioneta" {% if vehiculo.tipo_vehiculo == 'Camioneta' %}selected{% endif %}>Camioneta</option>
+                                <option value="Otro" {% if vehiculo.tipo_vehiculo == 'Otro' %}selected{% endif %}>Otro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="marca">Marca <span class="requerido">*</span></label>
+                            <input type="text" name="marca" id="marca"
+                                   value="{{ vehiculo.marca or '' }}" placeholder="Ej: Honda, Toyota">
+                        </div>
+                        <div class="form-group">
+                            <label for="modelo">Modelo <span class="requerido">*</span></label>
+                            <input type="text" name="modelo" id="modelo"
+                                   value="{{ vehiculo.modelo or '' }}" placeholder="Ej: CB190R, Corolla">
+                        </div>
+                        <div class="form-group">
+                            <label for="color">Color</label>
+                            <input type="text" name="color" id="color"
+                                   value="{{ vehiculo.color or '' }}" placeholder="Ej: Rojo, Negro">
+                        </div>
+                        <div class="form-group">
+                            <label for="anio">Año</label>
+                            <input type="text" name="anio" id="anio"
+                                   value="{{ vehiculo.anio or '' }}" placeholder="Ej: 2022">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección: Agregar Repuesto -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icono-seccion">&#128295;</span>
+                        Agregar Repuesto
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-agregar-repuesto">
+                        <div class="form-grid-repuesto">
+                            <div class="form-group campo-desc-nuevo">
+                                <label for="nuevo_desc">Descripción <span class="requerido">*</span></label>
+                                <input type="text" name="nuevo_desc" id="nuevo_desc"
+                                       placeholder="Ej: Batería, Filtro de aceite" value="">
+                            </div>
+                            <div class="form-group campo-valor-nuevo">
+                                <label for="nuevo_valor">Valor unitario (Gs.) <span class="requerido">*</span></label>
+                                <input type="number" name="nuevo_valor" id="nuevo_valor"
+                                       placeholder="Ej: 450000" min="1" value="">
+                            </div>
+                            <div class="form-group campo-cant-nuevo">
+                                <label for="nuevo_cant">Cantidad <span class="requerido">*</span></label>
+                                <input type="number" name="nuevo_cant" id="nuevo_cant"
+                                       placeholder="1" min="1" value="1">
+                            </div>
+                        </div>
+                        <button type="submit" formaction="{{ url_for('agregar_repuesto') }}" class="btn btn-agregar">+ Agregar repuesto</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección: Lista de Repuestos Cargados -->
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icono-seccion">&#128203;</span>
+                        Repuestos Cargados ({{ repuestos|length }})
+                    </h2>
+                </div>
+                <div class="card-body">
+                    {% if repuestos %}
+                    <div class="repuestos-lista">
+                        {% for repuesto in repuestos %}
+                        <div class="repuesto-fila">
+                            <div class="repuesto-info">
+                                <span class="repuesto-cantidad">{{ repuesto.cantidad }}x</span>
+                                <span class="repuesto-descripcion">{{ repuesto.descripcion }}</span>
+                            </div>
+                            <div class="repuesto-valores">
+                                <span class="repuesto-unitario">{{ repuesto.valor_fmt }} c/u</span>
+                                <span class="repuesto-subtotal">{{ repuesto.subtotal_fmt }}</span>
+                            </div>
+                            <button type="submit" name="eliminar" value="{{ loop.index0 }}"
+                                    formaction="{{ url_for('eliminar_repuesto_accion') }}"
+                                    class="btn-eliminar" title="Eliminar repuesto">&#10005;</button>
+                            <!-- Campos ocultos para preservar datos -->
+                            <input type="hidden" name="repuesto_desc_{{ loop.index0 }}" value="{{ repuesto.descripcion }}">
+                            <input type="hidden" name="repuesto_valor_{{ loop.index0 }}" value="{{ repuesto.valor_unitario }}">
+                            <input type="hidden" name="repuesto_cant_{{ loop.index0 }}" value="{{ repuesto.cantidad }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="texto-vacio">No hay repuestos agregados. Complete los datos arriba y presione "+ Agregar repuesto".</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Sección: Total -->
+            <section class="card card-total">
+                <div class="card-body total-display">
+                    <span class="total-label">TOTAL</span>
+                    <span class="total-valor">{{ total_fmt }}</span>
+                </div>
+            </section>
+
+            <!-- Botones de acción -->
+            <section class="acciones">
+                <button type="button" id="btn-descargar" class="btn btn-principal">
+                    &#11015; Descargar PDF
+                </button>
+                <button type="button" id="btn-whatsapp" class="btn btn-whatsapp">
+                    <span class="icono-wa">&#128241;</span> Compartir por WhatsApp
+                </button>
+                <button type="submit" formaction="{{ url_for('limpiar') }}" class="btn btn-secundario">Limpiar formulario</button>
+            </section>
+
+            <!-- Mensaje de estado para las acciones JS -->
+            <div id="estado-accion" class="estado-accion" hidden></div>
+        </form>
+    </main>
+
+    <footer class="footer">
+        <p>Vielma Moto-Repuestos &mdash; Oceanía, casi Sapirangy, Barrio 8 de Diciembre, Villa Elisa</p>
+    </footer>
+
+    <script>
+    (function () {
+        const form = document.getElementById('form-principal');
+        const btnDescargar = document.getElementById('btn-descargar');
+        const btnWhatsapp = document.getElementById('btn-whatsapp');
+        const estado = document.getElementById('estado-accion');
+
+        // Número de WhatsApp del taller (formato internacional, sin + ni espacios).
+        // Déjalo vacío ("") para que WhatsApp deje elegir el contacto al usuario.
+        const NUMERO_WHATSAPP = '';
+
+        const URL_GENERAR = "{{ url_for('generar_presupuesto_pdf') }}";
+
+        function mostrarEstado(mensaje, tipo) {
+            estado.hidden = false;
+            estado.textContent = mensaje;
+            estado.className = 'estado-accion' + (tipo ? ' estado-' + tipo : '');
+        }
+
+        function ocultarEstado() {
+            estado.hidden = true;
+            estado.textContent = '';
+        }
+
+        function desactivarBotones(desactivar) {
+            btnDescargar.disabled = desactivar;
+            btnWhatsapp.disabled = desactivar;
+        }
+
+        // Pide el PDF al servidor. Devuelve { blob, numero } o lanza error.
+        async function pedirPdf() {
+            const datos = new FormData(form);
+            const resp = await fetch(URL_GENERAR + '?ajax=1', {
+                method: 'POST',
+                body: datos
+            });
+
+            if (resp.status === 422) {
+                const json = await resp.json();
+                const lista = (json.errores || ['No se pudo generar el presupuesto.']).join('\n• ');
+                throw new Error('• ' + lista);
+            }
+
+            if (!resp.ok) {
+                throw new Error('Ocurrió un error al generar el PDF. Intenta de nuevo.');
+            }
+
+            const numero = resp.headers.get('X-Numero-Presupuesto') || 'presupuesto';
+            const blob = await resp.blob();
+            return { blob, numero };
+        }
+
+        // Fuerza la descarga de un blob en el dispositivo.
+        function descargarBlob(blob, nombreArchivo) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nombreArchivo;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+        }
+
+        function mensajeWhatsapp(numero) {
+            const marca = (form.querySelector('#marca')?.value || '').trim();
+            const modelo = (form.querySelector('#modelo')?.value || '').trim();
+            const vehiculo = [marca, modelo].filter(Boolean).join(' ');
+            let msg = 'Hola, te comparto el presupuesto ' + numero + ' de Vielma Moto-Repuestos';
+            if (vehiculo) {
+                msg += ' para tu ' + vehiculo;
+            }
+            msg += '.';
+            return msg;
+        }
+
+        function abrirWhatsapp(numero) {
+            const texto = encodeURIComponent(mensajeWhatsapp(numero));
+            const base = NUMERO_WHATSAPP
+                ? 'https://wa.me/' + NUMERO_WHATSAPP + '?text=' + texto
+                : 'https://wa.me/?text=' + texto;
+            window.open(base, '_blank');
+        }
+
+        // --- Botón: Descargar PDF ---
+        btnDescargar.addEventListener('click', async function () {
+            ocultarEstado();
+            desactivarBotones(true);
+            mostrarEstado('Generando PDF...', 'info');
+            try {
+                const { blob, numero } = await pedirPdf();
+                descargarBlob(blob, 'presupuesto_' + numero + '.pdf');
+                mostrarEstado('PDF descargado correctamente.', 'exito');
+            } catch (err) {
+                mostrarEstado(err.message, 'error');
+            } finally {
+                desactivarBotones(false);
+            }
+        });
+
+        // --- Botón: Compartir por WhatsApp ---
+        btnWhatsapp.addEventListener('click', async function () {
+            ocultarEstado();
+            desactivarBotones(true);
+            mostrarEstado('Preparando el presupuesto...', 'info');
+            try {
+                const { blob, numero } = await pedirPdf();
+                const nombreArchivo = 'presupuesto_' + numero + '.pdf';
+                const archivo = new File([blob], nombreArchivo, { type: 'application/pdf' });
+
+                // 1) Compartir nativo con archivo (móviles modernos): permite
+                //    enviar el PDF directamente a WhatsApp desde el menú del sistema.
+                if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+                    try {
+                        await navigator.share({
+                            files: [archivo],
+                            title: nombreArchivo,
+                            text: mensajeWhatsapp(numero)
+                        });
+                        mostrarEstado('Presupuesto compartido.', 'exito');
+                        return;
+                    } catch (errShare) {
+                        // Si el usuario cancela el diálogo, no seguimos con el respaldo.
+                        if (errShare && errShare.name === 'AbortError') {
+                            ocultarEstado();
+                            return;
+                        }
+                        // Cualquier otro error: caemos al respaldo de abajo.
+                    }
+                }
+
+                // 2) Respaldo (escritorio o navegadores sin compartir de archivos):
+                //    descargamos el PDF automáticamente y abrimos WhatsApp con el
+                //    mensaje listo para que el usuario adjunte el archivo descargado.
+                descargarBlob(blob, nombreArchivo);
+                abrirWhatsapp(numero);
+                mostrarEstado(
+                    'Descargamos el PDF y abrimos WhatsApp. Adjunta el archivo descargado en el chat.',
+                    'exito'
+                );
+            } catch (err) {
+                mostrarEstado(err.message, 'error');
+            } finally {
+                desactivarBotones(false);
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

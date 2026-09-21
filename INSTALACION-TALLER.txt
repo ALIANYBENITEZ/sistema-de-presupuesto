@@ -1,0 +1,222 @@
+================================================================================
+   GUÍA DE INSTALACIÓN - VIELMA MOTO-REPUESTOS
+   Sistema de Presupuestos para Autos y Motos
+================================================================================
+
+Esta guía es para instalar el sistema en una PC nueva del taller que NO tiene
+Python ni nada instalado. Solo necesitás la PC con Windows y conexión a internet.
+
+================================================================================
+PASO 1: DESCARGAR PYTHON
+================================================================================
+
+1. Abrí el navegador (Chrome, Edge, etc.)
+2. Andá a: https://www.python.org/downloads/
+3. Hacé clic en el botón amarillo grande "Download Python 3.x.x"
+4. Se va a descargar un archivo .exe (por ejemplo: python-3.12.x-amd64.exe)
+
+================================================================================
+PASO 2: INSTALAR PYTHON
+================================================================================
+
+1. Ejecutá el archivo .exe que descargaste
+2. ¡¡¡MUY IMPORTANTE!!! En la primera pantalla del instalador:
+   
+   [✓] MARCÁ LA CASILLA: "Add Python to PATH"
+   
+   (Está abajo de todo en la ventana del instalador)
+   Si no marcás esto, el sistema NO va a funcionar.
+
+3. Hacé clic en "Install Now"
+4. Esperá a que termine
+5. Hacé clic en "Close"
+
+================================================================================
+PASO 3: COPIAR LA CARPETA DEL SISTEMA
+================================================================================
+
+1. Copiá toda la carpeta "vielma-moto-repuestos" a la PC del taller
+2. Ponela en una ubicación fácil, por ejemplo:
+   
+   C:\vielma-moto-repuestos
+
+   (Directamente en el disco C: para que sea más simple)
+
+IMPORTANTE: NO copies la carpeta "venv" si existe. La vamos a crear nueva.
+
+================================================================================
+PASO 4: INSTALAR EL SISTEMA (solo una vez)
+================================================================================
+
+1. Abrí PowerShell:
+   - Hacé clic derecho en el menú Inicio
+   - Seleccioná "Windows PowerShell" o "Terminal"
+
+2. Copiá y pegá estos comandos UNO POR UNO:
+
+   cd C:\vielma-moto-repuestos
+
+   python -m venv venv
+
+   .\venv\Scripts\activate
+
+   pip install -r requirements.txt
+
+3. Si todo salió bien, vas a ver que se instalaron Flask y ReportLab sin errores.
+
+================================================================================
+PASO 5: PROBAR QUE FUNCIONA
+================================================================================
+
+1. Con la terminal aún abierta, escribí:
+
+   python app.py
+
+2. Debería aparecer algo como:
+   * Running on http://127.0.0.1:5000
+
+3. Abrí el navegador y andá a:
+
+   http://127.0.0.1:5000
+
+4. Si ves el sistema de presupuestos, ¡todo funciona!
+
+5. Para detener el sistema, en la terminal presioná: Ctrl + C
+
+================================================================================
+PASO 6: CREAR INICIO AUTOMÁTICO (para que arranque con Windows)
+================================================================================
+
+Opción A - Crear un archivo .bat de inicio automático:
+------------------------------------------------------
+
+1. Abrí el Bloc de notas
+
+2. Pegá este contenido:
+
+   @echo off
+   cd C:\vielma-moto-repuestos
+   call venv\Scripts\activate.bat
+   start http://127.0.0.1:5000
+   python app.py
+
+3. Guardá el archivo como:
+   
+   Nombre: iniciar-presupuestos.bat
+   Tipo: Todos los archivos (*.*)
+   Ubicación: C:\vielma-moto-repuestos\iniciar-presupuestos.bat
+
+4. Para que inicie automáticamente con Windows:
+
+   a) Presioná Windows + R
+   b) Escribí: shell:startup
+   c) Presioná Enter (se abre una carpeta)
+   d) Hacé clic derecho en esa carpeta → Nuevo → Acceso directo
+   e) En "ubicación del elemento" escribí:
+      
+      C:\vielma-moto-repuestos\iniciar-presupuestos.bat
+   
+   f) Hacé clic en "Siguiente"
+   g) Ponele nombre: "Vielma Presupuestos"
+   h) Hacé clic en "Finalizar"
+
+5. ¡Listo! Cada vez que enciendas la PC:
+   - Se va a abrir una ventana negra (terminal) - NO LA CIERRES
+   - Se va a abrir el navegador automáticamente con el sistema
+
+   IMPORTANTE: La ventana negra debe quedar abierta mientras uses el sistema.
+   Si la cerrás, el sistema se apaga.
+
+================================================================================
+PASO 7 (OPCIONAL): CREAR ACCESO DIRECTO EN EL ESCRITORIO
+================================================================================
+
+1. Hacé clic derecho en el Escritorio
+2. Nuevo → Acceso directo
+3. En ubicación escribí:
+
+   C:\vielma-moto-repuestos\iniciar-presupuestos.bat
+
+4. Nombre: "Vielma Presupuestos"
+5. Aceptar
+
+Así podés iniciar el sistema con doble clic cuando quieras.
+
+================================================================================
+PASO 8: CONFIGURAR EL NOMBRE "vielma-presupuestos.com" (una sola vez)
+================================================================================
+
+Para acceder al sistema escribiendo "vielma-presupuestos.com" en el navegador
+(en vez de una IP fea como 192.168.100.47), hay que ejecutar UN SOLO PASO:
+
+1. Buscá el archivo "configurar-nombre.bat" dentro de la carpeta del sistema
+2. Hacé CLIC DERECHO sobre el archivo → "Ejecutar como administrador"
+3. Aceptar cuando pregunte
+4. Listo
+
+Esto se hace UNA SOLA VEZ en cada PC o celular/tablet donde quieras usar el
+nombre "vielma-presupuestos.com".
+
+NOTA PARA CELULARES: En celulares no se puede modificar el archivo hosts
+fácilmente. Desde celulares se accede con la IP directamente:
+   http://192.168.100.47
+(la IP puede variar según tu red - fijarse cuál muestra la ventana negra)
+
+================================================================================
+SOLUCIÓN DE PROBLEMAS
+================================================================================
+
+PROBLEMA: "python no se reconoce como comando"
+SOLUCIÓN: Python no se instaló con la opción "Add to PATH".
+          Desinstalá Python, volvé a instalarlo y MARCÁ la casilla
+          "Add Python to PATH". Luego cerrá y abrí la terminal de nuevo.
+
+PROBLEMA: "No se puede ejecutar scripts en este sistema"
+SOLUCIÓN: Abrí PowerShell como Administrador y ejecutá:
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          Respondé "S" (Sí) y volvé a intentar.
+
+PROBLEMA: El navegador dice "No se puede acceder a este sitio"
+SOLUCIÓN: Verificá que la ventana negra (terminal) esté abierta y muestre
+          "Running on http://127.0.0.1:5000". Si no está, ejecutá el 
+          archivo iniciar-presupuestos.bat de nuevo.
+
+PROBLEMA: "pip no se reconoce"
+SOLUCIÓN: Asegurate de haber activado el entorno virtual primero:
+          .\venv\Scripts\activate
+
+PROBLEMA: La terminal se cierra inmediatamente
+SOLUCIÓN: Abrí PowerShell manualmente, navegá a la carpeta y ejecutá
+          los comandos uno por uno para ver el error.
+
+================================================================================
+RESUMEN RÁPIDO
+================================================================================
+
+Primera vez (instalación):
+  1. Instalar Python (marcar "Add to PATH")
+  2. Copiar carpeta a C:\vielma-moto-repuestos
+  3. Abrir PowerShell → cd C:\vielma-moto-repuestos
+  4. python -m venv venv
+  5. .\venv\Scripts\activate
+  6. pip install -r requirements.txt
+  7. Crear iniciar-presupuestos.bat
+  8. Poner acceso directo en Inicio automático
+
+Uso diario:
+  - Encender la PC → el sistema arranca solo
+  - Abrir http://127.0.0.1:5000 si el navegador no se abrió
+  - NO cerrar la ventana negra de la terminal
+
+================================================================================
+DATOS TÉCNICOS (por si necesitás soporte)
+================================================================================
+
+Sistema: Vielma Moto-Repuestos
+Tecnología: Python + Flask + ReportLab
+Puerto: 5000
+Dirección local: http://127.0.0.1:5000
+Carpeta: C:\vielma-moto-repuestos
+Python requerido: 3.10 o superior
+
+================================================================================

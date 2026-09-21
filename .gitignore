@@ -1,0 +1,23 @@
+# Entorno virtual
+venv/
+env/
+.venv/
+
+# Certificados HTTPS locales (NO subir: se generan en cada PC)
+cert.pem
+key.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Contador de presupuestos (dato local, no versionar)
+contador.txt
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
